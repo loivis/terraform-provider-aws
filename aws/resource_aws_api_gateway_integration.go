@@ -21,6 +21,7 @@ func resourceAwsApiGatewayIntegration() *schema.Resource {
 		Read:   resourceAwsApiGatewayIntegrationRead,
 		Update: resourceAwsApiGatewayIntegrationUpdate,
 		Delete: resourceAwsApiGatewayIntegrationDelete,
+		CustomizeDiff: resourceAwsApiGatewayIntegrationCustomizeDiff,
 
 		Schema: map[string]*schema.Schema{
 			"rest_api_id": {
@@ -440,4 +441,37 @@ func resourceAwsApiGatewayIntegrationDelete(d *schema.ResourceData, meta interfa
 
 		return resource.NonRetryableError(err)
 	})
+}
+
+func resourceAwsApiGatewayIntegrationCustomizeDiff(diff *schema.ResourceDiff, v interface{}) error {
+	// check connection_id
+	//connectionType := diff.Get("connection_type")
+	//if connectionType == apigateway.ConnectionTypeVpcLink {
+	//	if _, ok := diff.GetOk("connection_id"); !ok {
+	//		return fmt.Errorf("connection_id is required for connection type %s", connectionType)
+	//	}
+	//}
+
+	integrationType := diff.Get("type")
+	// check uri
+	if integrationType == apigateway.IntegrationTypeAws || integrationType == apigateway.IntegrationTypeHttp {
+		if _, ok := diff.GetOk("uri"); !ok {
+			return fmt.Errorf("uri is required for type %s", integrationType)
+		}
+	}
+	// check integration_http_method
+	if integrationType == apigateway.IntegrationTypeAws || integrationType == apigateway.IntegrationTypeAwsProxy || integrationType == apigateway.IntegrationTypeHttp || integrationType == apigateway.IntegrationTypeHttpProxy {
+		if _, ok := diff.GetOk("integration_http_method"); !ok {
+			return fmt.Errorf("integration_http_method is required for type %s", integrationType)
+		}
+	}
+
+	// check passthrough_behavior
+	if _, ok := diff.GetOk("request_templates"); ok {
+		if _, ok := diff.GetOk("passthrough_behavior"); !ok {
+			return errors.New("passthrough_behavior is required when request_templates is used")
+		}
+	}
+
+	return nil
 }
