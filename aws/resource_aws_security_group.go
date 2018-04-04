@@ -363,6 +363,10 @@ func resourceAwsSecurityGroupRead(d *schema.ResourceData, meta interface{}) erro
 	ingressRules := matchRules("ingress", localIngressRules, remoteIngressRules)
 	egressRules := matchRules("egress", localEgressRules, remoteEgressRules)
 
+	log.Printf("[loivis] remote ingress rules: %v", remoteIngressRules)
+	log.Printf("[loivis] local ingress rules: %v", localIngressRules)
+	log.Printf("[loivis] final ingress rules: %v", ingressRules)
+
 	sgArn := arn.ARN{
 		AccountID: aws.StringValue(sg.OwnerId),
 		Partition: meta.(*AWSClient).partition,
@@ -583,13 +587,29 @@ func resourceAwsSecurityGroupRuleHash(v interface{}) int {
 	if m["description"].(string) != "" {
 		buf.WriteString(fmt.Sprintf("%s-", m["description"].(string)))
 	}
-
+	log.Printf("[loivis] string to hash for security grou rule: %s", buf.String())
 	return hashcode.String(buf.String())
 }
+
+// func getRule(protocol, category string, fromPort, toPort int64) map[string]interface{} {
+// 	k := fmt.Sprintf("%s-%d-%d", protocol, fromPort, toPort)
+// 	m, ok := ruleMap[k]
+// 	if !ok {
+// 		m = make(map[string]interface{})
+// 		ruleMap[k] = m
+// 	}
+
+// 	m["from_port"] = fromPort
+// 	m["to_port"] = toPort
+// 	m["protocol"] = protocol
+
+// 	return m
+// }
 
 func resourceAwsSecurityGroupIPPermGather(groupId string, permissions []*ec2.IpPermission, ownerId *string) []map[string]interface{} {
 	ruleMap := make(map[string]map[string]interface{})
 	for _, perm := range permissions {
+		protocol := *perm.IpProtocol
 		var fromPort, toPort int64
 		if v := perm.FromPort; v != nil {
 			fromPort = *v
@@ -598,7 +618,9 @@ func resourceAwsSecurityGroupIPPermGather(groupId string, permissions []*ec2.IpP
 			toPort = *v
 		}
 
-		k := fmt.Sprintf("%s-%d-%d", *perm.IpProtocol, fromPort, toPort)
+		// should each rule has it's own description
+
+		k := fmt.Sprintf("%s-%d-%d", protocol, fromPort, toPort)
 		m, ok := ruleMap[k]
 		if !ok {
 			m = make(map[string]interface{})
@@ -607,11 +629,17 @@ func resourceAwsSecurityGroupIPPermGather(groupId string, permissions []*ec2.IpP
 
 		m["from_port"] = fromPort
 		m["to_port"] = toPort
-		m["protocol"] = *perm.IpProtocol
+		m["protocol"] = protocol
 
 		var description string
 
 		if len(perm.IpRanges) > 0 {
+			// k := fmt.Sprintf("%s-%d-%d-ip-ranges", protocol, fromPort, toPort)
+			// ruleMap[k] = map[string]interface{}{
+			// 	"from_port": fromPort,
+			// 	"to_port":   toPort,
+			// 	"protocol":  protocol,
+			// }
 			raw, ok := m["cidr_blocks"]
 			if !ok {
 				raw = make([]string, 0, len(perm.IpRanges))
