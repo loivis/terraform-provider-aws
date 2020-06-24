@@ -10,9 +10,9 @@ import (
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
 )
 
-func dataSourceAwsElasticSearchDomain() *schema.Resource {
+func dataSourceAwsElasticsearchDomain() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceAwsElasticSearchDomainRead,
+		Read: dataSourceAwsElasticsearchDomainRead,
 
 		Schema: map[string]*schema.Schema{
 			"access_policies": {
@@ -259,7 +259,7 @@ func dataSourceAwsElasticSearchDomain() *schema.Resource {
 	}
 }
 
-func dataSourceAwsElasticSearchDomainRead(d *schema.ResourceData, meta interface{}) error {
+func dataSourceAwsElasticsearchDomainRead(d *schema.ResourceData, meta interface{}) error {
 	esconn := meta.(*AWSClient).esconn
 	ignoreTagsConfig := meta.(*AWSClient).IgnoreTagsConfig
 

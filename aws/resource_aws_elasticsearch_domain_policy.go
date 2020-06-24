@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
-func resourceAwsElasticSearchDomainPolicy() *schema.Resource {
+func resourceAwsElasticsearchDomainPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAwsElasticSearchDomainPolicyUpsert,
-		Read:   resourceAwsElasticSearchDomainPolicyRead,
-		Update: resourceAwsElasticSearchDomainPolicyUpsert,
-		Delete: resourceAwsElasticSearchDomainPolicyDelete,
+		Create: resourceAwsElasticsearchDomainPolicyUpsert,
+		Read:   resourceAwsElasticsearchDomainPolicyRead,
+		Update: resourceAwsElasticsearchDomainPolicyUpsert,
+		Delete: resourceAwsElasticsearchDomainPolicyDelete,
 
 		Schema: map[string]*schema.Schema{
 			"domain_name": {
@@ -33,7 +33,7 @@ func resourceAwsElasticSearchDomainPolicy() *schema.Resource {
 	}
 }
 
-func resourceAwsElasticSearchDomainPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainPolicyRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 	name := d.Get("domain_name").(string)
 	out, err := conn.DescribeElasticsearchDomain(&elasticsearch.DescribeElasticsearchDomainInput{
@@ -41,14 +41,14 @@ func resourceAwsElasticSearchDomainPolicyRead(d *schema.ResourceData, meta inter
 	})
 	if err != nil {
 		if awsErr, ok := err.(awserr.Error); ok && awsErr.Code() == "ResourceNotFoundException" {
-			log.Printf("[WARN] ElasticSearch Domain %q not found, removing", name)
+			log.Printf("[WARN] Elasticsearch Domain %q not found, removing", name)
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	log.Printf("[DEBUG] Received ElasticSearch domain: %s", out)
+	log.Printf("[DEBUG] Received Elasticsearch domain: %s", out)
 
 	ds := out.DomainStatus
 	d.Set("access_policies", ds.AccessPolicies)
@@ -56,7 +56,7 @@ func resourceAwsElasticSearchDomainPolicyRead(d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceAwsElasticSearchDomainPolicyUpsert(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainPolicyUpsert(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 	domainName := d.Get("domain_name").(string)
 	_, err := conn.UpdateElasticsearchDomainConfig(&elasticsearch.UpdateElasticsearchDomainConfigInput{
@@ -96,10 +96,10 @@ func resourceAwsElasticSearchDomainPolicyUpsert(d *schema.ResourceData, meta int
 		return fmt.Errorf("Error upserting Elasticsearch domain policy: %s", err)
 	}
 
-	return resourceAwsElasticSearchDomainPolicyRead(d, meta)
+	return resourceAwsElasticsearchDomainPolicyRead(d, meta)
 }
 
-func resourceAwsElasticSearchDomainPolicyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainPolicyDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 
 	_, err := conn.UpdateElasticsearchDomainConfig(&elasticsearch.UpdateElasticsearchDomainConfigInput{
@@ -110,7 +110,7 @@ func resourceAwsElasticSearchDomainPolicyDelete(d *schema.ResourceData, meta int
 		return err
 	}
 
-	log.Printf("[DEBUG] Waiting for ElasticSearch domain policy %q to be deleted", d.Get("domain_name").(string))
+	log.Printf("[DEBUG] Waiting for Elasticsearch domain policy %q to be deleted", d.Get("domain_name").(string))
 	input := &elasticsearch.DescribeElasticsearchDomainInput{
 		DomainName: aws.String(d.Get("domain_name").(string)),
 	}

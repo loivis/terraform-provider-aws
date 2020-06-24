@@ -48,7 +48,7 @@ Elastic Load Balancing (ELB Classic)
 Elastic Load Balancing v2 (ALB/NLB)
 Elastic Map Reduce (EMR)
 Elastic Transcoder
-ElasticSearch
+Elasticsearch
 File System (FSx)
 Firewall Manager (FMS)
 Gamelift

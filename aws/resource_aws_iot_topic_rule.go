@@ -178,7 +178,7 @@ func resourceAwsIotTopicRule() *schema.Resource {
 						"endpoint": {
 							Type:         schema.TypeString,
 							Required:     true,
-							ValidateFunc: validateIoTTopicRuleElasticSearchEndpoint,
+							ValidateFunc: validateIoTTopicRuleElasticsearchEndpoint,
 						},
 						"id": {
 							Type:     schema.TypeString,

@@ -18,14 +18,14 @@ import (
 	"github.com/terraform-providers/terraform-provider-aws/aws/internal/keyvaluetags"
 )
 
-func resourceAwsElasticSearchDomain() *schema.Resource {
+func resourceAwsElasticsearchDomain() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAwsElasticSearchDomainCreate,
-		Read:   resourceAwsElasticSearchDomainRead,
-		Update: resourceAwsElasticSearchDomainUpdate,
-		Delete: resourceAwsElasticSearchDomainDelete,
+		Create: resourceAwsElasticsearchDomainCreate,
+		Read:   resourceAwsElasticsearchDomainRead,
+		Update: resourceAwsElasticsearchDomainUpdate,
+		Delete: resourceAwsElasticsearchDomainDelete,
 		Importer: &schema.ResourceImporter{
-			State: resourceAwsElasticSearchDomainImport,
+			State: resourceAwsElasticsearchDomainImport,
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -42,7 +42,7 @@ func resourceAwsElasticSearchDomain() *schema.Resource {
 					DomainName: aws.String(domainName),
 				})
 				if err != nil {
-					log.Printf("[ERROR] Failed to get compatible ElasticSearch versions %s", domainName)
+					log.Printf("[ERROR] Failed to get compatible Elasticsearch versions %s", domainName)
 					return false
 				}
 				if len(resp.CompatibleElasticsearchVersions) != 1 {
@@ -379,13 +379,13 @@ func resourceAwsElasticSearchDomain() *schema.Resource {
 	}
 }
 
-func resourceAwsElasticSearchDomainImport(
+func resourceAwsElasticsearchDomainImport(
 	d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	d.Set("domain_name", d.Id())
 	return []*schema.ResourceData{d}, nil
 }
 
-func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainCreate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 
 	// The API doesn't check for duplicate names
@@ -395,7 +395,7 @@ func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface
 		DomainName: aws.String(d.Get("domain_name").(string)),
 	})
 	if err == nil {
-		return fmt.Errorf("ElasticSearch domain %s already exists", aws.StringValue(resp.DomainStatus.DomainName))
+		return fmt.Errorf("Elasticsearch domain %s already exists", aws.StringValue(resp.DomainStatus.DomainName))
 	}
 
 	input := elasticsearch.CreateElasticsearchDomainInput{
@@ -501,7 +501,7 @@ func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface
 		input.CognitoOptions = expandESCognitoOptions(v.([]interface{}))
 	}
 
-	log.Printf("[DEBUG] Creating ElasticSearch domain: %s", input)
+	log.Printf("[DEBUG] Creating Elasticsearch domain: %s", input)
 
 	// IAM Roles can take some time to propagate if set in AccessPolicies and created in the same terraform
 	var out *elasticsearch.CreateElasticsearchDomainOutput
@@ -510,7 +510,7 @@ func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface
 		out, err = conn.CreateElasticsearchDomain(&input)
 		if err != nil {
 			if isAWSErr(err, "InvalidTypeException", "Error setting policy") {
-				log.Printf("[DEBUG] Retrying creation of ElasticSearch domain %s", aws.StringValue(input.DomainName))
+				log.Printf("[DEBUG] Retrying creation of Elasticsearch domain %s", aws.StringValue(input.DomainName))
 				return resource.RetryableError(err)
 			}
 			if isAWSErr(err, "ValidationException", "enable a service-linked role to give Amazon ES permissions") {
@@ -543,7 +543,7 @@ func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface
 		out, err = conn.CreateElasticsearchDomain(&input)
 	}
 	if err != nil {
-		return fmt.Errorf("Error creating ElasticSearch domain: %s", err)
+		return fmt.Errorf("Error creating Elasticsearch domain: %s", err)
 	}
 
 	d.SetId(aws.StringValue(out.DomainStatus.ARN))
@@ -558,18 +558,18 @@ func resourceAwsElasticSearchDomainCreate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	log.Printf("[DEBUG] Waiting for ElasticSearch domain %q to be created", d.Id())
-	err = waitForElasticSearchDomainCreation(conn, d.Get("domain_name").(string), d.Id())
+	log.Printf("[DEBUG] Waiting for Elasticsearch domain %q to be created", d.Id())
+	err = waitForElasticsearchDomainCreation(conn, d.Get("domain_name").(string), d.Id())
 	if err != nil {
 		return err
 	}
 
-	log.Printf("[DEBUG] ElasticSearch domain %q created", d.Id())
+	log.Printf("[DEBUG] Elasticsearch domain %q created", d.Id())
 
-	return resourceAwsElasticSearchDomainRead(d, meta)
+	return resourceAwsElasticsearchDomainRead(d, meta)
 }
 
-func waitForElasticSearchDomainCreation(conn *elasticsearch.ElasticsearchService, domainName, arn string) error {
+func waitForElasticsearchDomainCreation(conn *elasticsearch.ElasticsearchService, domainName, arn string) error {
 	input := &elasticsearch.DescribeElasticsearchDomainInput{
 		DomainName: aws.String(domainName),
 	}
@@ -591,19 +591,19 @@ func waitForElasticSearchDomainCreation(conn *elasticsearch.ElasticsearchService
 	if isResourceTimeoutError(err) {
 		out, err = conn.DescribeElasticsearchDomain(input)
 		if err != nil {
-			return fmt.Errorf("Error describing ElasticSearch domain: %s", err)
+			return fmt.Errorf("Error describing Elasticsearch domain: %s", err)
 		}
 		if !aws.BoolValue(out.DomainStatus.Processing) && (out.DomainStatus.Endpoint != nil || out.DomainStatus.Endpoints != nil) {
 			return nil
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("Error waiting for ElasticSearch domain to be created: %s", err)
+		return fmt.Errorf("Error waiting for Elasticsearch domain to be created: %s", err)
 	}
 	return nil
 }
 
-func resourceAwsElasticSearchDomainRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainRead(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 	ignoreTagsConfig := meta.(*AWSClient).IgnoreTagsConfig
 
@@ -612,14 +612,14 @@ func resourceAwsElasticSearchDomainRead(d *schema.ResourceData, meta interface{}
 	})
 	if err != nil {
 		if ec2err, ok := err.(awserr.Error); ok && ec2err.Code() == "ResourceNotFoundException" {
-			log.Printf("[INFO] ElasticSearch Domain %q not found", d.Get("domain_name").(string))
+			log.Printf("[INFO] Elasticsearch Domain %q not found", d.Get("domain_name").(string))
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	log.Printf("[DEBUG] Received ElasticSearch domain: %s", out)
+	log.Printf("[DEBUG] Received Elasticsearch domain: %s", out)
 
 	ds := out.DomainStatus
 
@@ -721,7 +721,7 @@ func resourceAwsElasticSearchDomainRead(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func resourceAwsElasticSearchDomainUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainUpdate(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 
 	if d.HasChange("tags") {
@@ -829,14 +829,14 @@ func resourceAwsElasticSearchDomainUpdate(d *schema.ResourceData, meta interface
 	if isResourceTimeoutError(err) {
 		out, err = conn.DescribeElasticsearchDomain(descInput)
 		if err != nil {
-			return fmt.Errorf("Error describing ElasticSearch domain: %s", err)
+			return fmt.Errorf("Error describing Elasticsearch domain: %s", err)
 		}
 		if !aws.BoolValue(out.DomainStatus.Processing) {
 			return nil
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("Error waiting for ElasticSearch domain changes to be processed: %s", err)
+		return fmt.Errorf("Error waiting for Elasticsearch domain changes to be processed: %s", err)
 	}
 
 	if d.HasChange("elasticsearch_version") {
@@ -880,14 +880,14 @@ func resourceAwsElasticSearchDomainUpdate(d *schema.ResourceData, meta interface
 		}
 	}
 
-	return resourceAwsElasticSearchDomainRead(d, meta)
+	return resourceAwsElasticsearchDomainRead(d, meta)
 }
 
-func resourceAwsElasticSearchDomainDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAwsElasticsearchDomainDelete(d *schema.ResourceData, meta interface{}) error {
 	conn := meta.(*AWSClient).esconn
 	domainName := d.Get("domain_name").(string)
 
-	log.Printf("[DEBUG] Deleting ElasticSearch domain: %q", domainName)
+	log.Printf("[DEBUG] Deleting Elasticsearch domain: %q", domainName)
 	_, err := conn.DeleteElasticsearchDomain(&elasticsearch.DeleteElasticsearchDomainInput{
 		DomainName: aws.String(domainName),
 	})
@@ -898,13 +898,13 @@ func resourceAwsElasticSearchDomainDelete(d *schema.ResourceData, meta interface
 		return err
 	}
 
-	log.Printf("[DEBUG] Waiting for ElasticSearch domain %q to be deleted", domainName)
-	err = resourceAwsElasticSearchDomainDeleteWaiter(domainName, conn)
+	log.Printf("[DEBUG] Waiting for Elasticsearch domain %q to be deleted", domainName)
+	err = resourceAwsElasticsearchDomainDeleteWaiter(domainName, conn)
 
 	return err
 }
 
-func resourceAwsElasticSearchDomainDeleteWaiter(domainName string, conn *elasticsearch.ElasticsearchService) error {
+func resourceAwsElasticsearchDomainDeleteWaiter(domainName string, conn *elasticsearch.ElasticsearchService) error {
 	input := &elasticsearch.DescribeElasticsearchDomainInput{
 		DomainName: aws.String(domainName),
 	}
@@ -932,14 +932,14 @@ func resourceAwsElasticSearchDomainDeleteWaiter(domainName string, conn *elastic
 			if isAWSErr(err, elasticsearch.ErrCodeResourceNotFoundException, "") {
 				return nil
 			}
-			return fmt.Errorf("Error describing ElasticSearch domain: %s", err)
+			return fmt.Errorf("Error describing Elasticsearch domain: %s", err)
 		}
 		if out.DomainStatus != nil && !aws.BoolValue(out.DomainStatus.Processing) {
 			return nil
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("Error waiting for ElasticSearch domain to be deleted: %s", err)
+		return fmt.Errorf("Error waiting for Elasticsearch domain to be deleted: %s", err)
 	}
 	return nil
 }

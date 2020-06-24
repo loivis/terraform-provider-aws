@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
-func TestAccAWSElasticSearchDomainPolicy_basic(t *testing.T) {
+func TestAccAWSElasticsearchDomainPolicy_basic(t *testing.T) {
 	var domain elasticsearch.ElasticsearchDomainStatus
 	ri := acctest.RandInt()
 	policy := `{

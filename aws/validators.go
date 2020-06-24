@@ -1878,7 +1878,7 @@ func validateIoTTopicRuleCloudWatchMetricTimestamp(v interface{}, s string) ([]s
 	return nil, nil
 }
 
-func validateIoTTopicRuleElasticSearchEndpoint(v interface{}, k string) (ws []string, errors []error) {
+func validateIoTTopicRuleElasticsearchEndpoint(v interface{}, k string) (ws []string, errors []error) {
 	value := v.(string)
 
 	// https://docs.aws.amazon.com/iot/latest/apireference/API_ElasticsearchAction.html

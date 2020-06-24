@@ -92,16 +92,16 @@ func resourceAwsElasticsearchPackageRead(d *schema.ResourceData, meta interface{
 	details, err := getElasticsearchPackage(conn, d.Id())
 	if err != nil {
 		if isAWSErr(err, "ResourceNotFoundException", "") {
-			log.Printf("[WARN] ElasticSearch Package (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] Elasticsearch Package (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
 
-		return fmt.Errorf("Error reading ElasticSearch Package: %s", err)
+		return fmt.Errorf("Error reading Elasticsearch Package: %s", err)
 	}
 
 	if details == nil {
-		log.Printf("[WARN] ElasticSearch Package (%s) not found, removing from state", d.Id())
+		log.Printf("[WARN] Elasticsearch Package (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}

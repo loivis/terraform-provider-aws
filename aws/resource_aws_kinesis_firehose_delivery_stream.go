@@ -1879,7 +1879,7 @@ func createElasticsearchConfig(d *schema.ResourceData, s3Config *firehose.S3Dest
 		BufferingHints:  extractBufferingHints(es),
 		DomainARN:       aws.String(es["domain_arn"].(string)),
 		IndexName:       aws.String(es["index_name"].(string)),
-		RetryOptions:    extractElasticSearchRetryOptions(es),
+		RetryOptions:    extractElasticsearchRetryOptions(es),
 		RoleARN:         aws.String(es["role_arn"].(string)),
 		TypeName:        aws.String(es["type_name"].(string)),
 		S3Configuration: s3Config,
@@ -1916,7 +1916,7 @@ func updateElasticsearchConfig(d *schema.ResourceData, s3Update *firehose.S3Dest
 		BufferingHints: extractBufferingHints(es),
 		DomainARN:      aws.String(es["domain_arn"].(string)),
 		IndexName:      aws.String(es["index_name"].(string)),
-		RetryOptions:   extractElasticSearchRetryOptions(es),
+		RetryOptions:   extractElasticsearchRetryOptions(es),
 		RoleARN:        aws.String(es["role_arn"].(string)),
 		TypeName:       aws.String(es["type_name"].(string)),
 		S3Update:       s3Update,
@@ -2014,7 +2014,7 @@ func extractBufferingHints(es map[string]interface{}) *firehose.ElasticsearchBuf
 	return bufferingHints
 }
 
-func extractElasticSearchRetryOptions(es map[string]interface{}) *firehose.ElasticsearchRetryOptions {
+func extractElasticsearchRetryOptions(es map[string]interface{}) *firehose.ElasticsearchRetryOptions {
 	retryOptions := &firehose.ElasticsearchRetryOptions{}
 
 	if retryDuration, ok := es["retry_duration"].(int); ok {
@@ -2123,7 +2123,7 @@ func resourceAwsKinesisFirehoseDeliveryStreamCreate(d *schema.ResourceData, meta
 			if isAWSErr(err, firehose.ErrCodeInvalidArgumentException, "is not authorized to") {
 				return resource.RetryableError(err)
 			}
-			// InvalidArgumentException: Verify that the IAM role has access to the ElasticSearch domain.
+			// InvalidArgumentException: Verify that the IAM role has access to the Elasticsearch domain.
 			if isAWSErr(err, firehose.ErrCodeInvalidArgumentException, "Verify that the IAM role has access") {
 				return resource.RetryableError(err)
 			}
@@ -2255,7 +2255,7 @@ func resourceAwsKinesisFirehoseDeliveryStreamUpdate(d *schema.ResourceData, meta
 			if isAWSErr(err, firehose.ErrCodeInvalidArgumentException, "is not authorized to") {
 				return resource.RetryableError(err)
 			}
-			// InvalidArgumentException: Verify that the IAM role has access to the ElasticSearch domain.
+			// InvalidArgumentException: Verify that the IAM role has access to the Elasticsearch domain.
 			if isAWSErr(err, firehose.ErrCodeInvalidArgumentException, "Verify that the IAM role has access") {
 				return resource.RetryableError(err)
 			}
